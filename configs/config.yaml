@@ -1,0 +1,226 @@
+app:
+  name: aegis-engine
+  mode: demo # paper | demo | live
+  timezone: Asia/Ho_Chi_Minh
+  symbols:
+    - BTCUSDT
+
+exchange:
+  name: binanceusdm
+  market_type: swap
+  settle: USDT
+  demo_trading: false
+  ccxt:
+    api_key_env: BINANCE_LIVE_API_KEY
+    api_secret_env: BINANCE_LIVE_API_SECRET
+    enableRateLimit: true
+    timeout: 20000
+    options:
+      defaultType: future
+
+exchange_demo:
+  name: binanceusdm
+  market_type: swap
+  settle: USDT
+  demo_trading: true
+  ccxt:
+    api_key_env: BINANCE_DEMO_API_KEY
+    api_secret_env: BINANCE_DEMO_API_SECRET
+    enableRateLimit: true
+    timeout: 20000
+    options:
+      defaultType: future
+
+timeframes:
+  confirm: "1h"
+  entry: "15m"
+  warmup_bars: 250
+  min_confirm_bars: 30
+
+strategy:
+  ema_fast: 20
+  ema_slow: 50
+  rsi_period: 14
+  adx_period: 14
+  atr_period: 14
+  volume_ma_period: 20
+  breakout_lookback: 20
+  breakout_buffer_bps: 5
+
+range_trading:
+  enabled: true
+  lookback: 64
+  min_touches: 2
+  edge_buffer_bps: 18
+  breakout_buffer_bps: 8
+  max_adx: 18
+  max_ema_spread_bps: 35
+  min_width_bps: 70
+  max_width_bps: 260
+  min_width_atr: 2.2
+  rsi_long_max: 43
+  rsi_short_min: 57
+  min_reward_r: 1.1
+  sl_atr_buffer: 0.35
+  tp_mid_buffer_bps: 4
+
+filters:
+  min_confluence_score: 4
+  score_gap_min: 2
+  opponent_score_max: 3
+  long:
+    rsi_min: 55
+    adx_min: 20
+    volume_multiplier: 1.2
+  short:
+    rsi_max: 45
+    adx_min: 20
+    volume_multiplier: 1.2
+
+market_context:
+  enabled: true
+  require_data: false # demo: cho phép thiếu một số field context; khi chạy live nên đổi lại true
+  market_data_source: execution # execution | live | demo
+  period: "15m"
+  oi_lookback: 3
+  min_oi_change_pct: 0.00
+  funding_abs_max: 0.0005
+  basis_contract_type: PERPETUAL
+  basis_abs_max: 0.0015
+  taker_ratio_long_min: 1.01
+  taker_ratio_short_max: 0.99
+  global_long_ratio_max: 1.8
+  global_short_ratio_min: 0.55
+  top_trader_long_ratio_max: 1.6
+  top_trader_short_ratio_min: 0.65
+  depth_enabled: true
+  depth_levels: 20
+  depth_long_min_ratio: 0.95
+  depth_short_max_ratio: 1.05
+  depth_max_age_sec: 5
+  depth_rest_fallback: true
+  liquidation_enabled: true
+  liquidation_window_sec: 60
+  liquidation_max_usdt: 5000000
+  adl_enabled: true
+  adl_block_levels: ["high"]
+  ws_enabled: true
+  ws_depth_enabled: true
+  ws_liquidation_enabled: true
+  ws_depth_interval: "100ms"
+
+hold_management:
+  enabled: true
+  soft_timeout_bars:
+    retest: 6
+    pullback: 5
+    breakout: 4
+    range_revert: 5
+  hard_timeout_bars:
+    retest: 10
+    pullback: 8
+    breakout: 6
+    range_revert: 8
+  progress_min_r: 0.35
+  move_sl_to_be_on_extend: true
+  be_buffer_bps: 3.0
+  require_trend_for_extend: true
+  use_taker_for_extend: true
+  close_on_soft_timeout_if_weak: true
+
+entry:
+  allow_retest: true
+  allow_pullback: true
+  allow_breakout: true
+  candle_filter:
+    enabled: true
+    min_body_bps: 4.0
+    min_body_atr: 0.12
+    max_total_wick_ratio: 0.85
+    max_opposite_wick_ratio: 0.55
+    min_rejection_wick_ratio: 0.12
+    volume_min_mult: 0.85
+    breakout_require_directional_body: true
+    pullback_require_rejection_wick: true
+    retest_require_rejection_wick: true
+  max_dist_ema_bps: 35
+  rsi_long_th: 55
+  rsi_short_th: 45
+  setup_priority: ["retest", "pullback", "breakout"]
+  size_multipliers:
+    retest: 1.0
+    pullback: 0.7
+    breakout: 0.2
+    range_revert: 0.6
+  retest:
+    max_bars_since_breakout: 6
+    touch_buffer_bps: 12
+    reclaim_buffer_bps: 3
+    require_ema_slope: true
+
+risk:
+  leverage: 10
+  margin_mode: isolated
+  sizing_mode: risk # risk | margin
+  risk_per_trade_pct: 0.20
+  margin_per_trade_usdt: 0
+  margin_per_trade_pct: 0
+  max_notional_usdt: 500
+  max_concurrent_positions: 1
+  daily_dd_stop_pct: 1.5
+  consecutive_loss_stop: 3
+  min_free_usdt_to_trade: 20
+  min_notional_usdt: 5
+  sl_pct: 0.55
+  tp_pct: 0.75
+
+execution:
+  entry_order: market
+  entry_order_by_setup:
+    retest: maker
+    pullback: maker
+    breakout: market
+    range_revert: maker
+  exit_order: taker
+  ref_price: book
+  max_spread_bps: 10
+  max_slippage_bps: 5
+  maker_timeout_sec: 10
+  maker_poll_interval_sec: 1.0
+  maker_min_fill_ratio: 0.7
+  maker_partial_fill_action: close # close | keep
+  maker_max_reprice: 1
+  maker_post_only: true
+  maker_price_offset_bps: 0.0
+  use_exchange_tp_sl: true
+  tp_trigger_type: TAKE_PROFIT_MARKET
+  sl_trigger_type: STOP_MARKET
+
+safety:
+  require_candle_close: true
+  min_liquidity_usd: 1000000
+  adx_no_trade_below: 17
+  min_atr_usd: 0.0
+  min_atr_pct: 0.10
+  max_atr_pct: 1.60
+  auto_repair_brackets: true
+  repair_brackets_cooldown_sec: 30
+
+scheduler:
+  align_to_candle_close: true
+  poll_seconds: 2
+
+logging:
+  level: INFO
+  file_live: logs/live.log
+  rich_console: true
+  runtime_heartbeat_sec: 30
+
+analytics:
+  trades_csv: logs/trades.csv
+  kpi_window_trades: 50
+  summary_every_closed: 1
+  fee_maker: 0.0002
+  fee_taker: 0.0005
+  funding_apply: true
+  active_state_json: logs/active_trades.json
